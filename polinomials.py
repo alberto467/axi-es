@@ -37,18 +37,18 @@ def DFT(a: list[int]) -> list[complex]:
 
 # FFT
 
-def FFT(a: list[int], n: int) -> list[complex]:
+def FFT(a: list[int]) -> list[complex]:
+    n = len(a)
+
     if (n == 1):
         return [ complex(a[0], 0) ]
 
     n2 = int(n/2)
     w_n = cmath.exp(2*cmath.pi*im_unit/n)
-    w = 1
+    w = complex(1, 0)
 
-    a_even = [ a[i] for i in range(0, n, 2) ]
-    a_odd = [ a[i] for i in range(1, n, 2) ]
-    y_even = FFT(a_even, n2)
-    y_odd = FFT(a_odd, n2)
+    y_even = FFT([ a[i] for i in range(0, n, 2) ])
+    y_odd = FFT([ a[i] for i in range(1, n, 2) ])
 
     y = [0 for _ in range(n)]
     for k in range(n2):
@@ -58,12 +58,36 @@ def FFT(a: list[int], n: int) -> list[complex]:
 
     return y
 
+def plot_FFT(data: np.ndarray):
+    samples = len(data)
+    nyquist_freq = int(samples/2)
 
-sines = np.sin(np.linspace(0, 2*np.pi*512, 2**12)) + np.sin(np.linspace(0, 2*np.pi*47, 2**12))*0.7 + + np.sin(np.linspace(0, 2*np.pi*4776, 2**12))*0.4
-sines_fft = FFT(sines, 2**12)
+    # Apply a Hanning window to the signal, to reduce spectral leakage
+    window = np.hanning(samples)
+    windowed_signal = data*window
 
-fig, (ax1, ax2) = plt.subplots(1, 2)
+    # Compute the FFT of the original and windowed signals
+    fft = np.abs(FFT(data)[:nyquist_freq])
+    windowed_fft = np.abs(FFT(windowed_signal)[:nyquist_freq])
+    # Normalize the windowed FFT to have the same maximum as the original FFT, for viewing purposes
+    windowed_fft = windowed_fft * (np.max(np.abs(fft)) / np.max(np.abs(windowed_fft)))
+    
+    # Plot the original and windowed signals, and their FFTs
+    fig, (ax1, ax2) = plt.subplots(1, 2)
 
-ax1.plot(sines)
-ax2.plot([ abs(x) for x in sines_fft])
-plt.show()
+    ax1.set_title('Signal')
+    ax1.plot(data, label='Original signal')
+    ax1.plot(windowed_signal, label='Windowed signal')
+    ax1.legend()
+
+    ax2.set_title('FFT')
+    ax2.set_xscale('log')
+    ax2.plot(np.abs(fft), label='FFT')
+    ax2.plot(np.abs(windowed_fft), label='Windowed FFT')
+    ax2.legend()
+
+    plt.show()
+
+samples = 2**14 # 4096
+sines = np.sin(np.linspace(0, 2*np.pi*1000.7, samples)) + np.sin(np.linspace(0.3, 2*np.pi*47, samples))*0.7 + np.sin(np.linspace(0.1, 2*np.pi*4776.4, samples))*0.4
+plot_FFT(sines)
