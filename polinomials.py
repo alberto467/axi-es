@@ -1,5 +1,4 @@
 import cmath
-from distutils.command import build
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -108,6 +107,6 @@ def plot_FFT(data: np.ndarray):
 
     plt.show()
 
-samples = 2**14 # 4096
+samples = 2**14
 sines = np.sin(np.linspace(0, 2*np.pi*1000.7, samples)) + np.sin(np.linspace(0.3, 2*np.pi*47, samples))*0.7 + np.sin(np.linspace(0.1, 2*np.pi*4776.4, samples))*0.4
 plot_FFT(sines)
